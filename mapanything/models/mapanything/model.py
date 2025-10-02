@@ -1455,7 +1455,7 @@ class MapAnything(nn.Module, PyTorchModelHubMixin):
                         output_shape_hw=img_shape,
                     )
                 )
-
+        import ipdb; ipdb.set_trace()
         # Scale prediction is lightweight, so we can run it in one go
         scale_head_output = self.scale_head(
             PredictionHeadTokenInput(last_feature=scale_head_inputs)
@@ -1905,6 +1905,18 @@ class MapAnything(nn.Module, PyTorchModelHubMixin):
                 for i in range(num_views):
                     res[i]["non_ambiguous_mask"] = output_masks_per_view[i]
                     res[i]["non_ambiguous_mask_logits"] = output_mask_logits_per_view[i]
+
+        # Use dense_head_inputs[1:] to get spatial features
+        spatial_features = dense_head_inputs[1:]
+        for i in range(num_views):
+            # (B, C, H, W) -> (B, C, H*W)
+            spatial_feature_reshaped = spatial_features[i].reshape(num_views, -1, spatial_features[i].shape[2] * spatial_features[i].shape[3]).cpu().numpy()
+            # (B, C, H*W) -> (1, C, H*W)
+            spatial_feature_reshaped_for_single_view = spatial_feature_reshaped[i].unsqueeze(0)
+            
+            res[i]["spatial_features"] = spatial_feature_reshaped_for_single_view
+            res[i]["scale_token"] = scale_head_inputs.cpu().numpy()
+            res[i]["metric_scaling_factor"] = scale_final_output.cpu().numpy()
 
         return res
 
