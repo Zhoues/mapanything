@@ -1911,11 +1911,11 @@ class MapAnything(nn.Module, PyTorchModelHubMixin):
             # (B, C, H, W) -> (B, C, H*W)
             spatial_feature_reshaped = spatial_features[i].reshape(num_views, -1, spatial_features[i].shape[2] * spatial_features[i].shape[3])
             # (B, C, H*W) -> (1, C, H*W)
-            spatial_feature_reshaped_for_single_view = spatial_feature_reshaped[i].unsqueeze(0).cpu().numpy()
+            spatial_feature_reshaped_for_single_view = spatial_feature_reshaped[i].unsqueeze(0)
             
-            res[i]["spatial_features"] = spatial_feature_reshaped_for_single_view
-            res[i]["scale_token"] = scale_head_inputs.cpu().numpy()
-            res[i]["metric_scaling_factor"] = scale_final_output.cpu().numpy()
+            res[i]["spatial_features"] = spatial_feature_reshaped_for_single_view # (1, hidden, base_h * base_w)
+            res[i]["scale_token"] = scale_head_inputs # (1, hidden, 1)
+            res[i]["metric_scaling_factor"] = scale_final_output
 
         return res
 
